@@ -5,14 +5,14 @@ delimiter=","
 
 show_help() {
     cat <<-'OUTER_EOF'
-column2csv
+fixedwidth2csv
 
 Given n fixedwidth tables in STDIN, each with a header, turn each table into
 its CSV equivalent.
 
 For example, given:
 
-cat << EOF | column2csv -d '|' -c 'country' -c 'district' -c 'city'
+cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'
 country       district city
 United States New York New York
 Canada        Ontario  Toronto
