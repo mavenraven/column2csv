@@ -30,9 +30,14 @@ France|Île-de-France|Paris
 Spain|Madrid|Madrid
 .
 
+Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the columns ahead of time
+[or calculate it on the fly]. This program does that for you.
+
 Options:
   -d Delimiter string to insert. Default is a comma.
   -c Column name to match on. You may pass multiple column names to reduce risk of false positives.
+     THE ORDER OF COLUMN NAMES MATTERS. For example, given the table above, -c country -c district would
+     match, but -c district -c country would not.
 OUTER_EOF
 }
 
