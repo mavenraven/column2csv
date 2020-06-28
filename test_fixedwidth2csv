@@ -5,7 +5,7 @@ input=$(cat <<-'EOF'
 col1     col2  col3
 hellllo  oh    cool 
 col1  col2      col3
-hello coolness  nice 
+hello cool ess  nice 
 EOF
 )
 
@@ -14,7 +14,7 @@ cat <<EOF > "$expected"
 col1<|>col2<|>col3
 hellllo<|>oh<|>cool 
 col1<|>col2<|>col3
-hello<|>coolness<|>nice 
+hello<|>cool ess<|>nice 
 EOF
 
 actual=$(mktemp)
