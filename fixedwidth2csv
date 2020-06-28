@@ -1,13 +1,6 @@
 #!/bin/sh
 set -eu
 
-if ! command -v gawk > /dev/null; then
-    echo "gawk (GNU AWK) must be on the PATH." 1>&2
-    exit 1
-fi
-
-delimiter=","
-
 show_help() {
     cat <<-'OUTER_EOF'
 fixedwidth2csv
@@ -45,6 +38,13 @@ Options:
      match, but -c district -c country would not.
 OUTER_EOF
 }
+
+if ! command -v gawk > /dev/null; then
+    echo "gawk (GNU AWK) must be on the PATH." 1>&2
+    exit 1
+fi
+
+delimiter=","
 
 if [ "$#" -eq 0 ]; then
     show_help
@@ -143,45 +143,3 @@ gawk -v delimiter="$delimiter" '
         }
     }
     ' "$@"
-
-
-
-
-
-# We require GNU awk because we're using its fixed FIELDWIDTHS functionality.
-
-# The column size changes on every page, so we recalulate it every time we see
-# the header.
-
-# We ouput the fields using the ASCII unit seperator as the delimiter. This makes
-# it safe to split on later.
-
-# BEGIN { OFS = "\037" }
-
-#$0 ~ "ZIP" && $0 ~ "BLDGNO1" {
-#    split($0, chars, "")
-#    on_whitespace = 0
-#    field_count = 0
-#    FIELDWIDTHS = ""
-#
-#    for (i = 1; i < length($0); i++) {
-#        if (chars[i] == " " && on_whitespace == 0) {
-#            on_whitespace = 1
-#            field_count++
-#        }
-#        else if (chars[i] == " " && on_whitespace == 1){
-#            field_count++
-#        }
-#        else if (chars[i] != " " && on_whitespace == 0){
-#            field_count++
-#        }
-#        else if (chars[i] != " " && on_whitespace == 1){
-#            FIELDWIDTHS = FIELDWIDTHS " " field_count
-#            field_count = 1
-#            on_whitespace = 0
-#        }
-#    }
-#    next
-#}
-#
-#{ $1 = $1; print $0 }
