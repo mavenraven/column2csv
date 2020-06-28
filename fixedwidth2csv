@@ -69,16 +69,47 @@ while [ "$last" -gt 0 ]; do
     last=$(($last - 1))
 done
 
-if [ "$#" -eq 0 ]; then
-    echo "No column names passed in." 1>&2
-    show_help
-    exit 1
-fi
+#if [ "$#" -eq 0 ]; then
+#    echo "No column names passed in." 1>&2
+#    show_help
+#    exit 1
+#fi
 
 gawk -v delimiter="$delimiter" '
     BEGIN {
         OFS = delimiter 
-        print OFS
+
+        if (ARGC == 1) {
+            print "No column names passed in."
+            exit 1
+        }
+
+
+        column_regex = "[[:space:]]*"
+
+        for (i = 1; i < ARGC - 1; i++) {
+            print ARGV[i]
+            column_regex = column_regex ARGV[i] "[[:space:]]+" 
+        }
+        column_regex = column_regex ARGV[ARGC -1] "[[:space:]]*"
+
+        for (i = 1; i < ARGC; i++) {
+            delete ARGV[i];
+        }
+
+        
+        print column_regex
+
+    }
+
+
+    {
+        if ($0 ~ column_regex) {
+            print "hi"
+        }
+        else {
+            print "bye"
+        }
     }
     ' "$@"
 
@@ -94,7 +125,7 @@ gawk -v delimiter="$delimiter" '
 # We ouput the fields using the ASCII unit seperator as the delimiter. This makes
 # it safe to split on later.
 
-#BEGIN { OFS = "\037" }
+# BEGIN { OFS = "\037" }
 
 #$0 ~ "ZIP" && $0 ~ "BLDGNO1" {
 #    split($0, chars, "")
