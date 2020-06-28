@@ -108,27 +108,32 @@ gawk -v delimiter="$delimiter" '
 
     {
         if ($0 ~ column_regex) {
-            split($0, chars, "")
+            chars_len = split($0, chars, "")
             on_whitespace = 0
-            field_count = 0
+            current_field_size = 0
+            for (i in field_widths) {
+                delete field_widths[i]
+            }
+            field_widths_idx = 1
             FW = ""
 
-            for (i = 1 ; i <= length(chars); i++) {
+            for (i = 1 ; i <= chars_len; i++) {
                 if (chars[i] == " " && on_whitespace == 0) {
                     on_whitespace = 1
-                    field_count++
+                    current_field_size++
                 }
 
                 else if (chars[i] == " " && on_whitespace == 1) {
-                    field_count++
+                    current_field_size++
                 }
 
                 else if (chars[i] != " " && on_whitespace == 0) {
-                    field_count++
+                    current_field_size++
                 }
                 else if (chars[i] != " " && on_whitespace == 1) {
-                    FW = FW " " field_count
-                    field_count = 1
+                    FW = FW " " current_field_size
+                    field_widths[field_widths_idx++] = current_field_size
+                    current_field_size = 1
                     on_whitespace = 0
                 }
             }
@@ -137,11 +142,25 @@ gawk -v delimiter="$delimiter" '
             # We just use int MAX and call it a day.
 
             max_field_length = 2^32 - 1
+            field_widths[field_widths_idx] = max_field_length
             FIELDWIDTHS = FW " " max_field_length
-            next
 
+            next
         }
 
+        chars_len = split($0, chars, "")
+        field_num = 1;
+        current_field = ""
+
+
+        for (i = 1; i <= chars_len; i++) {
+            current_field = current_field chars[i]
+            if (length(current_field) == field_widths[field_num]) {
+                $field_num = current_field
+                current_field = ""
+                field_num++
+            }
+        }
         $1 = $1
         for (i = 1; i <= NF; i++) {
             gsub(/$[[:space:]]+/, "", $i)
