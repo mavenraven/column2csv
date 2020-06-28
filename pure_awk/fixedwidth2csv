@@ -38,7 +38,7 @@ return \
 "you.                                                                           \n" \
 "                                                                               \n" \
 "Options:                                                                       \n" \
-"  --delimiter Delimiter string to insert. Default is a comma.                  \n" \
+"  -d Delimiter string to insert. Default is a comma.                           \n" \
 "  -c Column name to match on. You may pass multiple column names to reduce     \n" \
 "     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, \n" \
 "     given the table above, -c country -c district would match, but x          \n" \
@@ -75,17 +75,17 @@ function parse_args(argv, argc, result) {
 }
 
 
-
 BEGIN {
     print ARGV[0]
     print ARGV[1]
 
-    parse_args(ARGV, ARGC, result)
+    parse_args(ARGV, ARGC, args)
 
-    if (! result["columns", 1])  {
+    if (! args["columns", 1])  {
         print "At least one column name must be specified." 
         exit 1
     }
 
-
+    print args["columns", 1]
+    print args["delimiter"]
 }
