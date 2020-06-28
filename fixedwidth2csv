@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+if ! command -v gawk > /dev/null; then
+    echo "gawk (GNU AWK) must be on the PATH." 1>&2
+    exit 1
+fi
+
 delimiter=","
 
 show_help() {
@@ -125,7 +130,6 @@ gawk -v delimiter="$delimiter" '
                 }
             }
 
-            
             # For the last field in the header, we may or may not be padded with spaces. We dont care either way.
             # We just use int MAX and call it a day.
 
