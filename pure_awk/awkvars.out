@@ -1,0 +1,37 @@
+ARGC: 2
+ARGIND: 0
+ARGV: array, 2 elements
+BINMODE: 0
+COLUMN_NAME: 2
+CONVFMT: "%.6g"
+DELIMITER: 1
+ENVIRON: array, 33 elements
+ERRNO: ""
+FIELDWIDTHS: ""
+FILENAME: ""
+FNR: 0
+FPAT: "[^[:space:]]+"
+FS: " "
+FUNCTAB: array, 43 elements
+IGNORECASE: 0
+LINT: 0
+NF: 0
+NONE: 3
+NR: 0
+OFMT: "%.6g"
+OFS: " "
+ORS: "\n"
+PREC: 53
+PROCINFO: array, 35 elements
+RLENGTH: 0
+ROUNDMODE: "N"
+RS: "\n"
+RSTART: 0
+RT: ""
+SUBSEP: "\034"
+SYMTAB: array, 35 elements
+TEXTDOMAIN: "messages"
+column_num: 1
+context: uninitialized scalar
+i: 2
+result: array, 1 elements

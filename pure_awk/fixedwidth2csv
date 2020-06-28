@@ -1,5 +1,6 @@
-#!/usr/bin/env awk -f
-
+#/bin/sh
+#See https://stackoverflow.com/a/59330239
+exec awk "$(sed '1,3d' "$0")" "$@"
 
 function help_text() {
 
@@ -37,7 +38,7 @@ return \
 "you.                                                                           \n" \
 "                                                                               \n" \
 "Options:                                                                       \n" \
-"  -d Delimiter string to insert. Default is a comma.                           \n" \
+"  --delimiter Delimiter string to insert. Default is a comma.                  \n" \
 "  -c Column name to match on. You may pass multiple column names to reduce     \n" \
 "     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, \n" \
 "     given the table above, -c country -c district would match, but x          \n" \
@@ -53,14 +54,12 @@ function parse_args(argv, argc, result) {
 
     column_num = 1
     for (i = 1; i < argc; i++) {
-        if (argv[i] == "-d" || argv[i] == "--delimiter") {
+        if (argv[i] == "-d") {
             context = DELIMITER
-            continue
         } 
 
-        else if (argv[i] == "-c" || argv[i] == "--column") {
+        else if (argv[i] == "-c") {
             context = COLUMN_NAME
-            continue
         }
 
         else if (context == DELIMITER) {
@@ -69,7 +68,8 @@ function parse_args(argv, argc, result) {
         }
      
        else if (context == COLUMN_NAME) {
-           result["columns"][column_num++] = argv[i]
+           result["columns", column_num++] = argv[i]
+           context = NONE
        }
     }
 }
@@ -77,13 +77,15 @@ function parse_args(argv, argc, result) {
 
 
 BEGIN {
-    parse_args(ARGV, ARGC, result)
-    print result["delimiter"]
+    print ARGV[0]
+    print ARGV[1]
 
-    if (! result["columns"][1])  {
+    parse_args(ARGV, ARGC, result)
+
+    if (! result["columns", 1])  {
         print "At least one column name must be specified." 
-        print help_text()
         exit 1
     }
+
 
 }
