@@ -128,12 +128,10 @@ awk -v delimiter="$delimiter" '
                 }
             }
 
-            #sentinel value as we dont care about the length of the last field. Just consume
-            #the rest of the line 
+            #Sentinel value as we dont care about the length of the last field. Just consume
+            #the rest of the line.
 
             field_widths[field_widths_idx] = -1
-
-            next
         }
 
         chars_len = split($0, chars, "")

@@ -12,7 +12,9 @@ EOF
 
 expected=$(mktemp)
 cat <<EOF > "$expected"
+col1<|>col2<|>col3
 hellllo<|>oh<|>cool
+col1<|>col2<|>col3
 hello<|>cool ess<|>nice
 EOF
 
@@ -36,9 +38,11 @@ EOF
 
 expected=$(mktemp)
 cat <<EOF > "$expected"
+country<|>district<|>city
 United States<|>New York<|>New York
 Canada<|>Ontario<|>Toronto
 
+country<|>district<|>city
 France<|>Île-de-France<|>Paris
 Spain<|>Madrid<|>Madrid
 EOF
