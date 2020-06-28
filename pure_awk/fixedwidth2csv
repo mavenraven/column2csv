@@ -1,0 +1,43 @@
+#!/usr/bin/env awk -f
+
+function parse_args(argv, argc, result) {
+
+    DELIMITER = 1
+    COLUMN_NAME = 2
+    NONE = 3
+
+    column_num = 1
+    for (i = 1; i < argc; i++) {
+        if (argv[i] == "-d" || argv[i] == "--delimiter") {
+            context = DELIMITER
+            continue
+        } 
+
+        else if (argv[i] == "-c" || argv[i] == "--column") {
+            context = COLUMN_NAME
+            continue
+        }
+
+        else if (context == DELIMITER) {
+            result["delimiter"] = argv[i]
+            context = NONE
+        }
+     
+       else if (context == COLUMN_NAME) {
+           result["columns"][column_num++] = argv[i]
+       }
+    }
+}
+
+
+
+BEGIN {
+    parse_args(ARGV, ARGC, result)
+    print result["delimiter"]
+
+    if (! result["columns"][1])  {
+        print "At least one column name must be specified."
+        exit 1
+    }
+
+}
