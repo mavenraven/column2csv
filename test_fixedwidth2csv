@@ -5,7 +5,7 @@ set -eu
 input=$(cat <<-'EOF'
 col1     col2  col3
 hellllo  oh    cool 
-col1  col2      col3
+col1  col2      col3    
 hello cool ess  nice 
 EOF
 )
