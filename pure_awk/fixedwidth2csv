@@ -1,5 +1,50 @@
 #!/usr/bin/env awk -f
 
+
+function help_text() {
+
+return \
+"fixedwidth2csv                                                                 \n" \
+"                                                                               \n" \
+"Given n fixedwidth tables in STDIN, each with a header, turn each table into   \n" \
+"its CSV equivalent.                                                            \n" \
+"                                                                               \n" \
+"For example, given:                                                            \n" \
+"                                                                               \n" \
+"cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'        \n" \
+"country       district city                                                    \n" \
+"United States New York New York                                                \n" \
+"Canada        Ontario  Toronto                                                 \n" \
+"                                                                               \n" \
+"country district      city                                                     \n" \
+"France  Île-de-France Paris                                                    \n" \
+"Spain   Madrid        Madrid                                                   \n" \
+"EOF                                                                            \n" \
+"                                                                               \n" \
+"we get,                                                                        \n" \
+"                                                                               \n" \
+"country|district|city                                                          \n" \
+"United States|New York|New York                                                \n" \
+"Canada|Ontario|Toronto                                                         \n" \
+"                                                                               \n" \
+"country|district|city                                                          \n" \
+"France|Île-de-France|Paris                                                     \n" \
+"Spain|Madrid|Madrid                                                            \n" \
+".                                                                              \n" \
+"                                                                               \n" \
+"Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the    \n" \
+"columns ahead of time [or calculate it on the fly]. This program does that for \n" \
+"you.                                                                           \n" \
+"                                                                               \n" \
+"Options:                                                                       \n" \
+"  -d Delimiter string to insert. Default is a comma.                           \n" \
+"  -c Column name to match on. You may pass multiple column names to reduce     \n" \
+"     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, \n" \
+"     given the table above, -c country -c district would match, but x          \n" \
+"     -c district -c country would not.                                         \n" \
+"  -h Print this help text.                                                     \n" \
+}
+
 function parse_args(argv, argc, result) {
 
     DELIMITER = 1
@@ -36,7 +81,8 @@ BEGIN {
     print result["delimiter"]
 
     if (! result["columns"][1])  {
-        print "At least one column name must be specified."
+        print "At least one column name must be specified." 
+        print help_text()
         exit 1
     }
 
