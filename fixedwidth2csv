@@ -69,11 +69,11 @@ while [ "$last" -gt 0 ]; do
     last=$(($last - 1))
 done
 
-#if [ "$#" -eq 0 ]; then
-#    echo "No column names passed in." 1>&2
-#    show_help
-#    exit 1
-#fi
+if [ "$#" -eq 0 ]; then
+    echo "No column names passed in." 1>&2
+    show_help
+    exit 1
+fi
 
 gawk -v delimiter="$delimiter" '
     BEGIN {
@@ -84,11 +84,9 @@ gawk -v delimiter="$delimiter" '
             exit 1
         }
 
-
         column_regex = "[[:space:]]*"
 
         for (i = 1; i < ARGC - 1; i++) {
-            print ARGV[i]
             column_regex = column_regex ARGV[i] "[[:space:]]+" 
         }
         column_regex = column_regex ARGV[ARGC -1] "[[:space:]]*"
@@ -97,18 +95,47 @@ gawk -v delimiter="$delimiter" '
             delete ARGV[i];
         }
 
-        
-        print column_regex
-
     }
 
 
     {
         if ($0 ~ column_regex) {
-            print "hi"
+            split($0, chars, "")
+            on_whitespace = 0
+            field_count = 0
+            FW = ""
+
+            for (i = 1 ; i <= length(chars); i++) {
+                if (chars[i] == " " && on_whitespace == 0) {
+                    on_whitespace = 1
+                    field_count++
+                }
+
+                else if (chars[i] == " " && on_whitespace == 1) {
+                    field_count++
+                }
+
+                else if (chars[i] != " " && on_whitespace == 0) {
+                    field_count++
+                }
+                else if (chars[i] != " " && on_whitespace == 1) {
+                    FW = FW " " field_count
+                    field_count = 1
+                    on_whitespace = 0
+                }
+            }
+
+            
+            # For the last field in the header, we may or may not be padded with spaces. We dont care either way.
+            # We just use int MAX and call it a day.
+
+            max_field_length = 2 ** 32 - 1
+            FIELDWIDTHS = FW " " max_field_length
+
         }
         else {
-            print "bye"
+            $1 = $1
+            print $0
         }
     }
     ' "$@"
