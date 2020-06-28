@@ -136,12 +136,17 @@ gawk -v delimiter="$delimiter" '
             # For the last field in the header, we may or may not be padded with spaces. We dont care either way.
             # We just use int MAX and call it a day.
 
-            max_field_length = 2 ** 32 - 1
+            max_field_length = 2^32 - 1
             FIELDWIDTHS = FW " " max_field_length
+            next
 
         }
 
         $1 = $1
+        for (i = 1; i <= NF; i++) {
+            gsub(/$[[:space:]]+/, "", $i)
+            gsub(/[[:space:]]+$/, "", $i)
+        }
         print $0
     }
     ' "$@"

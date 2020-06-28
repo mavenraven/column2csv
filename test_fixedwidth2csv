@@ -11,10 +11,8 @@ EOF
 
 expected=$(mktemp)
 cat <<EOF > "$expected"
-col1<|>col2<|>col3
-hellllo<|>oh<|>cool 
-col1<|>col2<|>col3
-hello<|>cool ess<|>nice 
+hellllo<|>oh<|>cool
+hello<|>cool ess<|>nice
 EOF
 
 actual=$(mktemp)
