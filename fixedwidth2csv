@@ -22,8 +22,10 @@ EOF
 
 we get, 
 
+country|district|city
 United States|New York|New York
 Canada|Ontario|Toronto
+country|district|city
 France|Île-de-France|Paris
 Spain|Madrid|Madrid
 .
@@ -36,6 +38,7 @@ Options:
   -c Column name to match on. You may pass multiple column names to reduce risk of false positives.
      THE ORDER OF COLUMN NAMES MATTERS. For example, given the table above, -c country -c district would
      match, but -c district -c country would not.
+  -h Print this help text.
 OUTER_EOF
 }
 
@@ -51,7 +54,7 @@ if [ "$#" -eq 0 ]; then
     exit 0
 fi
 
-while getopts 'c:d:' opt; do
+while getopts 'hc:d:' opt; do
 	case "$opt" in
 	h)
 		show_help
@@ -137,9 +140,8 @@ gawk -v delimiter="$delimiter" '
             FIELDWIDTHS = FW " " max_field_length
 
         }
-        else {
-            $1 = $1
-            print $0
-        }
+
+        $1 = $1
+        print $0
     }
     ' "$@"
