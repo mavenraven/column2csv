@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 
+# test 1
 input=$(cat <<-'EOF'
 col1     col2  col3
 hellllo  oh    cool 
@@ -19,3 +20,30 @@ actual=$(mktemp)
 echo "$input" | ./fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
 
 diff "$actual" "$expected"
+
+#test 2
+input=$(cat <<-'EOF'
+country       district city
+United States New York New York
+Canada        Ontario  Toronto
+
+country district      city
+France  Île-de-France Paris
+Spain   Madrid        Madrid
+EOF
+)
+
+
+expected=$(mktemp)
+cat <<EOF > "$expected"
+United States<|>New York<|>New York
+Canada<|>Ontario<|>Toronto
+
+France<|>Île-de-France<|>Paris
+Spain<|>Madrid<|>Madrid
+EOF
+
+actual=$(mktemp)
+echo "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
+diff "$actual" "$expected"
+
