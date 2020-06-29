@@ -21,6 +21,10 @@ EOF
 actual=$(mktemp)
 echo "$input" | fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
 
+
+echo "actual: "
+cat "$actual"
+
 diff "$actual" "$expected"
 
 #test 2

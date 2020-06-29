@@ -1,0 +1,12 @@
+#!/bin/sh -eu
+
+i=1
+for var in "$@"; do
+    echo $var
+    escaped=$(echo "$var") # | sed "s/'/\\\'/g")
+    set -- "$@" "-v v$i=\"$escaped\""
+    shift
+    i=$((i + 1))
+done
+#set -- "$@" "-v variable_count='$#'"
+echo "$@"

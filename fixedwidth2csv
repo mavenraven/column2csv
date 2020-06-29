@@ -79,7 +79,7 @@ if [ "$#" -eq 0 ]; then
     exit 1
 fi
 
-awk -v delimiter="$delimiter" '
+awk -v args="$@" '
     BEGIN {
         OFS = delimiter 
 
@@ -95,14 +95,15 @@ awk -v delimiter="$delimiter" '
         }
         column_regex = column_regex ARGV[ARGC -1] "[[:space:]]*"
 
-        for (i = 1; i < ARGC; i++) {
-            delete ARGV[i];
+        for (i = 1; i <= ARGC; i++) {
+            ARGV[i] = ""
         }
 
     }
 
 
     {
+        print "fuck"
         if ($0 ~ column_regex) {
             chars_len = split($0, chars, "")
             on_whitespace = 0

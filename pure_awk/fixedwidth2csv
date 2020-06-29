@@ -1,8 +1,13 @@
 #/bin/sh
 # vi: syntax=awk
+i=1
+for var in "$@"; do
+    export "V$i"="$var"
+    true $((i++))
+done
+export COUNT=$(($i - 1))
 #See https://stackoverflow.com/a/59330239
-#exec awk "$(sed '1,4d' "$0")" "$@"
-{ print "h" }
+exec awk "$(sed '1,10d' "$0")"
 
 function help_text() {
 return \
@@ -83,8 +88,13 @@ function parse_args(argv, argc, result) {
 
 
 BEGIN {
-    last_columns_idx = parse_args(ARGV, ARGC, args)
-
+    for (i = 1; i <=  ENVIRON["COUNT"]; i++) {
+        print ENVIRON["V"i]
+    }
+}
+#    last_columns_idx = parse_args(ARGV, ARGC, args)
+#
+#
 #    if (ARGC == 1) {
 #        print help_text()
 #        exit 0
@@ -95,16 +105,17 @@ BEGIN {
 #        exit 1
 #    }
 
-    column_regex = "[[:space:]]*"
-
-    for (i = 1; i < last_columns_idx; i++) {
-        column_regex = column_regex args["columns", i] "[[:space:]]+" 
-    }
-    column_regex = column_regex args["columns", last_columns_idx] "[[:space:]]*"
-
+#    column_regex = "[[:space:]]*"
+##
+#    for (i = 1; i < last_columns_idx; i++) {
+#        column_regex = column_regex args["columns", i] "[[:space:]]+" 
+#    }
+#    column_regex = column_regex args["columns", last_columns_idx] "[[:space:]]*"
+#
     #remove all args to prevent `awk: can't open file -c` 
-     for (i = 1; i < ARGC; i++) {
-         delete ARGV[i];
-     }
-}
+#}
+#
+#{
+# print "whyyyyyy"
+#}
 
