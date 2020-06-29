@@ -3,7 +3,6 @@
 exec awk "$(sed '1,3d' "$0")" "$@"
 
 function help_text() {
-
 return \
 "fixedwidth2csv                                                                 \n" \
 "                                                                               \n" \
@@ -54,6 +53,10 @@ function parse_args(argv, argc, result) {
 
     column_num = 1
     for (i = 1; i < argc; i++) {
+        if (argv[i] == "-h" || argv[i] == "--help") {
+            print help_text()
+            exit 0
+        }
         if (argv[i] == "-d") {
             context = DELIMITER
         } 
@@ -72,20 +75,96 @@ function parse_args(argv, argc, result) {
            context = NONE
        }
     }
+    
+    return column_num - 1
 }
 
 
 BEGIN {
-    print ARGV[0]
-    print ARGV[1]
+    last_columns_idx = parse_args(ARGV, ARGC, args)
 
-    parse_args(ARGV, ARGC, args)
+    if (ARGC == 1) {
+        print help_text()
+        exit 0
+    }
 
     if (! args["columns", 1])  {
         print "At least one column name must be specified." 
         exit 1
     }
 
-    print args["columns", 1]
-    print args["delimiter"]
+    column_regex = "[[:space:]]*"
+
+    for (i = 1; i < last_columns_idx; i++) {
+        column_regex = column_regex args["columns", i] "[[:space:]]+" 
+    }
+    column_regex = column_regex args["columns", last_columns_idx] "[[:space:]]*"
+
+    #remove all args to prevent `awk: can't open file -c` 
+    for (i = 1; i < ARGC; i++) {
+        delete ARGV[i];
+    }
+
+
+    print column_regex
+}
+
+{
+    if ($0 ~ column_regex) {
+        chars_len = split($0, chars, "")
+        on_whitespace = 0
+        current_field_size = 0
+        field_widths_idx = 1
+
+        for (i = 1 ; i <= chars_len; i++) {
+            if (chars[i] == " " && on_whitespace == 0) {
+                on_whitespace = 1
+                current_field_size++
+            }
+
+            else if (chars[i] == " " && on_whitespace == 1) {
+                current_field_size++
+            }
+
+            else if (chars[i] != " " && on_whitespace == 0) {
+                current_field_size++
+            }
+            else if (chars[i] != " " && on_whitespace == 1) {
+                field_widths[field_widths_idx++] = current_field_size
+                current_field_size = 1
+                on_whitespace = 0
+            }
+        }
+
+        #Sentinel value as we dont care about the length of the last field. Just consume
+        #the rest of the line.
+
+        field_widths[field_widths_idx] = -1
+    }
+
+    chars_len = split($0, chars, "")
+    fields_idx = 1;
+    current_field = ""
+
+    for (i = 1; i <= chars_len; i++) {
+        current_field = current_field chars[i]
+        if (length(current_field) == field_widths[fields_idx]) {
+            fields[fields_idx++] = current_field
+            current_field = ""
+        }
+    }
+      
+    fields[fields_idx] = current_field
+
+    for (i = 1; i <= fields_idx; i++) {
+        gsub(/$[[:space:]]+/, "", fields[i])
+        gsub(/[[:space:]]+$/, "", fields[i])
+    }
+      
+
+    for (i = 1; i < fields_idx; i++) {
+        printf("%s%s", fields[i], OFS)
+    }
+        
+    print fields[fields_idx]
 }
