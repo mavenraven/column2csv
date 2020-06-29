@@ -4,106 +4,24 @@ i=1; for var in "$@"; do export "V$i"="$var"; true $((i++)); done; export COUNT=
 #See https://stackoverflow.com/a/59330239
 exec awk "$(sed '1,4d' "$0")"
 
-function help_text() {
-print "fixedwidth2csv                                                                 " 
-print "                                                                               " 
-print "Given n fixedwidth tables in STDIN, each with a header, turn each table into   " 
-print "its CSV equivalent.                                                            " 
-print "                                                                               " 
-print "For example, given:                                                            " 
-print "                                                                               " 
-print "cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'        " 
-print "country       district city                                                    " 
-print "United States New York New York                                                " 
-print "Canada        Ontario  Toronto                                                 " 
-print "                                                                               " 
-print "country district      city                                                     " 
-print "France  Île-de-France Paris                                                    " 
-print "Spain   Madrid        Madrid                                                   " 
-print "EOF                                                                            " 
-print "                                                                               " 
-print "we get,                                                                        " 
-print "                                                                               " 
-print "country|district|city                                                          " 
-print "United States|New York|New York                                                " 
-print "Canada|Ontario|Toronto                                                         " 
-print "                                                                               " 
-print "country|district|city                                                          " 
-print "France|Île-de-France|Paris                                                     " 
-print "Spain|Madrid|Madrid                                                            " 
-print ".                                                                              " 
-print "                                                                               " 
-print "Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the    " 
-print "columns ahead of time [or calculate it on the fly]. This program does that for " 
-print "you.                                                                           " 
-print "                                                                               " 
-print "Options:                                                                       " 
-print "  -d Delimiter string to insert. Default is a comma.                           " 
-print "  -c Column name to match on. You may pass multiple column names to reduce     " 
-print "     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, " 
-print "     given the table above, -c country -c district would match, but x          " 
-print "     -c district -c country would not.                                         " 
-print "  -h Print this help text.                                                     " 
-}
-
-function parse_args(args, args_len, result) {
-
-    DELIMITER = 1
-    COLUMN_NAME = 2
-    NONE = 3
-
-    column_num = 1
-    for (i = 1; i <= args_len; i++) {
-        if (args[i] == "-h" || args[i] == "--help") {
-            print help_text()
-            exit 0
-        }
-        if (args[i] == "-d") {
-            context = DELIMITER
-        } 
-
-        else if (args[i] == "-c") {
-            context = COLUMN_NAME
-        }
-
-        else if (context == DELIMITER) {
-            result["delimiter"] = args[i]
-            context = NONE
-        }
-     
-       else if (context == COLUMN_NAME) {
-           result["columns", column_num++] = args[i]
-           context = NONE
-       }
-       else {
-       }
-    }
-    
-    return column_num - 1
-}
-
 
 BEGIN {
-    args_len = ENVIRON["COUNT"]
-
-    if (args_len == 0) {
-        print help_text()
-        exit 0
-    }
-
-    for (i = 1; i <= args_len; i++) {
-        args[i] = ENVIRON["V"i]
-    }
-
-    last_columns_idx = parse_args(args, args_len, parsed)
-
-    if (last_columns_idx == 0) {
-        print "At least one column name must be specified."
-        exit 1
-    }
+	args_len = ENVIRON["COUNT"]
+	if (args_len == 0) {
+		print help_text()
+		exit 0
+	}
+	for (i = 1; i <= args_len; i++) {
+		args[i] = ENVIRON["V" i]
+	}
+	last_columns_idx = parse_args(args, args_len, parsed)
+	if (last_columns_idx == 0) {
+		print "At least one column name must be specified."
+		exit 1
+	}
 }
 
-    
+
 #
 #
 #    if (ARGC == 1) {
@@ -123,10 +41,78 @@ BEGIN {
 #    }
 #    column_regex = column_regex args["columns", last_columns_idx] "[[:space:]]*"
 #
-    #remove all args to prevent `awk: can't open file -c` 
+#remove all args to prevent `awk: can't open file -c` 
 #}
 #
 #{
 # print "whyyyyyy"
 #}
+function help_text()
+{
+	print "fixedwidth2csv                                                                 "
+	print "                                                                               "
+	print "Given n fixedwidth tables in STDIN, each with a header, turn each table into   "
+	print "its CSV equivalent.                                                            "
+	print "                                                                               "
+	print "For example, given:                                                            "
+	print "                                                                               "
+	print "cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'        "
+	print "country       district city                                                    "
+	print "United States New York New York                                                "
+	print "Canada        Ontario  Toronto                                                 "
+	print "                                                                               "
+	print "country district      city                                                     "
+	print "France  \303\216le-de-France Paris                                             "
+	print "Spain   Madrid        Madrid                                                   "
+	print "EOF                                                                            "
+	print "                                                                               "
+	print "we get,                                                                        "
+	print "                                                                               "
+	print "country|district|city                                                          "
+	print "United States|New York|New York                                                "
+	print "Canada|Ontario|Toronto                                                         "
+	print "                                                                               "
+	print "country|district|city                                                          "
+	print "France|\303\216le-de-France|Paris                                              "
+	print "Spain|Madrid|Madrid                                                            "
+	print ".                                                                              "
+	print "                                                                               "
+	print "Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the    "
+	print "columns ahead of time [or calculate it on the fly]. This program does that for "
+	print "you.                                                                           "
+	print "                                                                               "
+	print "Options:                                                                       "
+	print "  -d Delimiter string to insert. Default is a comma.                           "
+	print "  -c Column name to match on. You may pass multiple column names to reduce     "
+	print "     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, "
+	print "     given the table above, -c country -c district would match, but x          "
+	print "     -c district -c country would not.                                         "
+	print "  -h Print this help text.                                                     "
+}
 
+function parse_args(args, args_len, result)
+{
+	DELIMITER = 1
+	COLUMN_NAME = 2
+	NONE = 3
+	column_num = 1
+	for (i = 1; i <= args_len; i++) {
+		if (args[i] == "-h" || args[i] == "--help") {
+			print help_text()
+			exit 0
+		}
+		if (args[i] == "-d") {
+			context = DELIMITER
+		} else if (args[i] == "-c") {
+			context = COLUMN_NAME
+		} else if (context == DELIMITER) {
+			result["delimiter"] = args[i]
+			context = NONE
+		} else if (context == COLUMN_NAME) {
+			result["columns", column_num++] = args[i]
+			context = NONE
+		} else {
+		}
+	}
+	return (column_num - 1)
+}
