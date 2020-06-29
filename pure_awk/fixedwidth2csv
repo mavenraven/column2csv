@@ -5,46 +5,45 @@ i=1; for var in "$@"; do export "V$i"="$var"; true $((i++)); done; export COUNT=
 exec awk "$(sed '1,4d' "$0")"
 
 function help_text() {
-return \
-"fixedwidth2csv                                                                 \n" \
-"                                                                               \n" \
-"Given n fixedwidth tables in STDIN, each with a header, turn each table into   \n" \
-"its CSV equivalent.                                                            \n" \
-"                                                                               \n" \
-"For example, given:                                                            \n" \
-"                                                                               \n" \
-"cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'        \n" \
-"country       district city                                                    \n" \
-"United States New York New York                                                \n" \
-"Canada        Ontario  Toronto                                                 \n" \
-"                                                                               \n" \
-"country district      city                                                     \n" \
-"France  Île-de-France Paris                                                    \n" \
-"Spain   Madrid        Madrid                                                   \n" \
-"EOF                                                                            \n" \
-"                                                                               \n" \
-"we get,                                                                        \n" \
-"                                                                               \n" \
-"country|district|city                                                          \n" \
-"United States|New York|New York                                                \n" \
-"Canada|Ontario|Toronto                                                         \n" \
-"                                                                               \n" \
-"country|district|city                                                          \n" \
-"France|Île-de-France|Paris                                                     \n" \
-"Spain|Madrid|Madrid                                                            \n" \
-".                                                                              \n" \
-"                                                                               \n" \
-"Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the    \n" \
-"columns ahead of time [or calculate it on the fly]. This program does that for \n" \
-"you.                                                                           \n" \
-"                                                                               \n" \
-"Options:                                                                       \n" \
-"  -d Delimiter string to insert. Default is a comma.                           \n" \
-"  -c Column name to match on. You may pass multiple column names to reduce     \n" \
-"     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, \n" \
-"     given the table above, -c country -c district would match, but x          \n" \
-"     -c district -c country would not.                                         \n" \
-"  -h Print this help text.                                                     \n" \
+print "fixedwidth2csv                                                                 " 
+print "                                                                               " 
+print "Given n fixedwidth tables in STDIN, each with a header, turn each table into   " 
+print "its CSV equivalent.                                                            " 
+print "                                                                               " 
+print "For example, given:                                                            " 
+print "                                                                               " 
+print "cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'        " 
+print "country       district city                                                    " 
+print "United States New York New York                                                " 
+print "Canada        Ontario  Toronto                                                 " 
+print "                                                                               " 
+print "country district      city                                                     " 
+print "France  Île-de-France Paris                                                    " 
+print "Spain   Madrid        Madrid                                                   " 
+print "EOF                                                                            " 
+print "                                                                               " 
+print "we get,                                                                        " 
+print "                                                                               " 
+print "country|district|city                                                          " 
+print "United States|New York|New York                                                " 
+print "Canada|Ontario|Toronto                                                         " 
+print "                                                                               " 
+print "country|district|city                                                          " 
+print "France|Île-de-France|Paris                                                     " 
+print "Spain|Madrid|Madrid                                                            " 
+print ".                                                                              " 
+print "                                                                               " 
+print "Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the    " 
+print "columns ahead of time [or calculate it on the fly]. This program does that for " 
+print "you.                                                                           " 
+print "                                                                               " 
+print "Options:                                                                       " 
+print "  -d Delimiter string to insert. Default is a comma.                           " 
+print "  -c Column name to match on. You may pass multiple column names to reduce     " 
+print "     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, " 
+print "     given the table above, -c country -c district would match, but x          " 
+print "     -c district -c country would not.                                         " 
+print "  -h Print this help text.                                                     " 
 }
 
 function parse_args(args, args_len, result) {
