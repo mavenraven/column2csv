@@ -1,0 +1,5 @@
+#!/bin/sh
+# vim: syntax=awk
+i=1; for arg in "$@"; do export "ARGV$i=$arg" && i=$((i + 1)); done; export "ARGC=$((i - 1))";
+exec awk "$(sed '1,4d' "$0")" # https://stackoverflow.com/a/59330239
+
