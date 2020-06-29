@@ -19,34 +19,15 @@ BEGIN {
 		print "At least one column name must be specified."
 		exit 1
 	}
+	column_regex = "[[:space:]]*"
+	for (i = 1; i < last_columns_idx; i++) {
+		column_regex = column_regex parsed["columns", i] "[[:space:]]+"
+	}
+	column_regex = column_regex parsed["columns", last_columns_idx] "[[:space:]]*"
+	print column_regex
 }
 
 
-#
-#
-#    if (ARGC == 1) {
-#        print help_text()
-#        exit 0
-#    }
-
-#    if (! args["columns", 1])  {
-#        print "At least one column name must be specified." 
-#        exit 1
-#    }
-
-#    column_regex = "[[:space:]]*"
-##
-#    for (i = 1; i < last_columns_idx; i++) {
-#        column_regex = column_regex args["columns", i] "[[:space:]]+" 
-#    }
-#    column_regex = column_regex args["columns", last_columns_idx] "[[:space:]]*"
-#
-#remove all args to prevent `awk: can't open file -c` 
-#}
-#
-#{
-# print "whyyyyyy"
-#}
 function help_text()
 {
 	print "fixedwidth2csv                                                                 "
