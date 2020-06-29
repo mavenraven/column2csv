@@ -1,0 +1,2 @@
+#!/bin/sh
+(awk 'BEGIN{found = 0}; /exec[[:space:]]+awk/ { found = 1; print } { if (found == 0) { print } }' "$1"; gawk -o- "$(cat "$1" | awk 'BEGIN{found = 0}; /exec[[:space:]]+awk/ { found = 1; next } { if (found == 1) { print } }')")

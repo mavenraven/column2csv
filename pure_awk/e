@@ -1,6 +1,0 @@
-BEGIN {
-     for (i = 1; i < ARGC; i++) {
-         delete ARGV[i];
-     }
-}
-{print "hzi" }

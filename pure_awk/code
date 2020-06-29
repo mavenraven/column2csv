@@ -1,8 +1,3 @@
-#/bin/sh
-# vim: syntax=awk
-i=1; for var in "$@"; do export "V$i"="$var"; true $((i++)); done; export COUNT=$(($i - 1));
-#See https://stackoverflow.com/a/59330239
-exec awk "$(sed '1,4d' "$0")"
 
 function help_text() {
 return \
@@ -97,6 +92,8 @@ BEGIN {
     }
 
     last_columns_idx = parse_args(args, args_len, parsed)
+if () {
+}
 
     if (last_columns_idx == 0) {
         print "At least one column name must be specified."
