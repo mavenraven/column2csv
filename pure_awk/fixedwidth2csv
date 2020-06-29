@@ -1,6 +1,8 @@
 #/bin/sh
+# vi: syntax=awk
 #See https://stackoverflow.com/a/59330239
-exec awk "$(sed '1,3d' "$0")" "$@"
+#exec awk "$(sed '1,4d' "$0")" "$@"
+{ print "h" }
 
 function help_text() {
 return \
@@ -83,15 +85,15 @@ function parse_args(argv, argc, result) {
 BEGIN {
     last_columns_idx = parse_args(ARGV, ARGC, args)
 
-    if (ARGC == 1) {
-        print help_text()
-        exit 0
-    }
+#    if (ARGC == 1) {
+#        print help_text()
+#        exit 0
+#    }
 
-    if (! args["columns", 1])  {
-        print "At least one column name must be specified." 
-        exit 1
-    }
+#    if (! args["columns", 1])  {
+#        print "At least one column name must be specified." 
+#        exit 1
+#    }
 
     column_regex = "[[:space:]]*"
 
@@ -101,70 +103,8 @@ BEGIN {
     column_regex = column_regex args["columns", last_columns_idx] "[[:space:]]*"
 
     #remove all args to prevent `awk: can't open file -c` 
-    for (i = 1; i < ARGC; i++) {
-        delete ARGV[i];
-    }
-
-
-    print column_regex
+     for (i = 1; i < ARGC; i++) {
+         delete ARGV[i];
+     }
 }
 
-{
-    if ($0 ~ column_regex) {
-        chars_len = split($0, chars, "")
-        on_whitespace = 0
-        current_field_size = 0
-        field_widths_idx = 1
-
-        for (i = 1 ; i <= chars_len; i++) {
-            if (chars[i] == " " && on_whitespace == 0) {
-                on_whitespace = 1
-                current_field_size++
-            }
-
-            else if (chars[i] == " " && on_whitespace == 1) {
-                current_field_size++
-            }
-
-            else if (chars[i] != " " && on_whitespace == 0) {
-                current_field_size++
-            }
-            else if (chars[i] != " " && on_whitespace == 1) {
-                field_widths[field_widths_idx++] = current_field_size
-                current_field_size = 1
-                on_whitespace = 0
-            }
-        }
-
-        #Sentinel value as we dont care about the length of the last field. Just consume
-        #the rest of the line.
-
-        field_widths[field_widths_idx] = -1
-    }
-
-    chars_len = split($0, chars, "")
-    fields_idx = 1;
-    current_field = ""
-
-    for (i = 1; i <= chars_len; i++) {
-        current_field = current_field chars[i]
-        if (length(current_field) == field_widths[fields_idx]) {
-            fields[fields_idx++] = current_field
-            current_field = ""
-        }
-    }
-      
-    fields[fields_idx] = current_field
-
-    for (i = 1; i <= fields_idx; i++) {
-        gsub(/$[[:space:]]+/, "", fields[i])
-        gsub(/[[:space:]]+$/, "", fields[i])
-    }
-      
-
-    for (i = 1; i < fields_idx; i++) {
-        printf("%s%s", fields[i], OFS)
-    }
-        
-    print fields[fields_idx]
-}
