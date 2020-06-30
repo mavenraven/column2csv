@@ -20,9 +20,9 @@ BEGIN {
 		exit 1
 	}
 
-  if (system("awk --version | grep GNU > /dev/null") != 0) {
-      print "GNU awk not on PATH. UTF-8 input unlikely to work correctly..." | "cat 1>&2"
-  }
+	if (system("awk --version | grep GNU > /dev/null") != 0) {
+		print("GNU awk not on PATH. UTF-8 input unlikely to work correctly...") | "cat 1>&2"
+	}
 
 	OFS = parsed["delimiter"] ? parsed["delimiter"] : ","
 	column_regex = "[[:space:]]*"
