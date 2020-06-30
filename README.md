@@ -17,4 +17,4 @@ More information can be found via `fixedwidth2csv -h`.
 `curl -O https://raw.githubusercontent.com/mavenraven/fixedwidth2csv/master/fixedwidth2csv && chmod +x fixedwidth2csv`
 
 ## tests
-To run the tests, run the following in the repo directory: `PATH=.:$PATH ./test_fixedwidth2csv`.
+To run the tests, run the following in the repo directory: `./test_fixedwidth2csv`.

@@ -27,7 +27,7 @@ col1<|>col2<|>col3
 hello<|>cool ess<|>nice
 EOF
 
-echo "$input" | fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
+echo "$input" | ./fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
 diff "$actual" "$expected"
 
 #test 2
@@ -52,7 +52,7 @@ France<|>Ile-de-France<|>Paris
 Spain<|>Madrid<|>Madrid
 EOF
 
-echo "$input" | fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
+echo "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
 diff "$actual" "$expected"
 
 
@@ -66,5 +66,5 @@ export PATH=./gawk:$PATH
 
 #generate input and expected with scripts because it difficult to build those precisely without code 
 ./print_utf8_table_expected > "$expected"
-./print_utf8_table_input | fixedwidth2csv -d '<|>' -c 'cats' -c 'city' > "$actual"
+./print_utf8_table_input | ./fixedwidth2csv -d '<|>' -c 'cats' -c 'city' > "$actual"
 diff "$actual" "$expected"
