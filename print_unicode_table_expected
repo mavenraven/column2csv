@@ -1,0 +1,19 @@
+#!/bin/sh
+
+printf "cats<|>city\n"
+
+i=0
+while [ "$i" -lt '5' ]; do
+ 	printf '😾'
+	i=$((i + 1))
+done
+
+printf '<|>New York City\n'
+
+i=0
+while [ "$i" -lt '3' ]; do
+	printf '😽'
+	i=$((i + 1))
+done
+
+printf '<|>Los Angeles\n'

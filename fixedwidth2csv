@@ -1,170 +1,187 @@
 #!/bin/sh
-set -eu
+# vim: syntax=awk
+i=1; for arg in "$@"; do export "ARGV$i=$arg" && i=$((i + 1)); done; export "ARGC=$((i - 1))";
+exec awk "$(sed '1,4d' "$0")" # https://stackoverflow.com/a/59330239
 
-show_help() {
-    cat <<-'OUTER_EOF'
-fixedwidth2csv
+BEGIN {
+	args_len = ENVIRON["ARGC"]
+	if (args_len == 0) {
+		print help_text()
+		exit 0
+	}
 
-Given n fixedwidth tables in STDIN, each with a header, turn each table into
-its CSV equivalent.
+	for (i = 1; i <= args_len; i++) {
+		args[i] = ENVIRON["ARGV" i]
+	}
 
-For example, given:
+	columns_len = parse_args(args, args_len, parsed)
+	if (columns_len == 0) {
+		print "At least one column name must be specified."
+		exit 1
+	}
 
-cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'
-country       district city
-United States New York New York
-Canada        Ontario  Toronto
+	OFS = parsed["delimiter"] ? parsed["delimiter"] : ","
+	column_regex = "[[:space:]]*"
+	for (i = 1; i < columns_len; i++) {
+		column_regex = column_regex parsed["columns", i] "[[:space:]]+"
+	}
 
-country district      city
-France  Ile-de-France Paris
-Spain   Madrid        Madrid
-EOF
-
-we get, 
-
-country|district|city
-United States|New York|New York
-Canada|Ontario|Toronto
-
-country|district|city
-France|Ile-de-France|Paris
-Spain|Madrid|Madrid
-.
-
-Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the columns ahead of time
-[or calculate it on the fly]. This program does that for you [and doesn't require gawk, only POSIX awk].
-
-
-
-
-
-Options:
-  -d Delimiter string to insert. Default is a comma.
-  -c Column name to match on. You may pass multiple column names to reduce risk of false positives.
-     THE ORDER OF COLUMN NAMES MATTERS. For example, given the table above, -c country -c district would
-     match, but -c district -c country would not.
-  -h Print this help text.
-OUTER_EOF
+	column_regex = column_regex parsed["columns", columns_len] "[[:space:]]*"
 }
 
-delimiter=","
 
-if [ "$#" -eq 0 ]; then
-    show_help
-    exit 0
-fi
+{
+	if ($0 ~ column_regex) {
+		field_widths_len = get_field_widths($0, field_widths)
+	}
 
-while getopts 'hc:d:' opt; do
-	case "$opt" in
-	h)
-		show_help
-		exit
-		;;
-	d)
-		delimiter="$OPTARG"
-		;;
-	c)
-      set -- "$@" "$OPTARG"
-		;;
-	esac
-done
+	chars_len = split($0, chars, "")
+	fields_idx = 1
+	current_field = ""
+	for (i = 1; i <= chars_len; i++) {
+		current_field = current_field chars[i]
+		if (length(current_field) == field_widths[fields_idx]) {
+			fields[fields_idx++] = current_field
+			current_field = ""
+		}
 
-# We remove any of the "original" args, so we only have an array of our column names in $@.
-last=$(($OPTIND - 1))
+	}
 
-while [ "$last" -gt 0 ]; do
-    shift
-    last=$(($last - 1))
-done
+	#Last field won't ever match a length because of the sentinel value. We add it here.
+	fields[fields_idx] = current_field
+	for (i = 1; i <= fields_idx; i++) {
+		gsub(/$[[:space:]]+/, "", fields[i])
+		gsub(/[[:space:]]+$/, "", fields[i])
+	}
 
-if [ "$#" -eq 0 ]; then
-    echo "No column names passed in." 1>&2
-    show_help
-    exit 1
-fi
+	for (i = 1; i < fields_idx; i++) {
+		printf "%s%s", fields[i], OFS
+	}
 
-awk -v args="$@" '
-    BEGIN {
-        OFS = delimiter 
-
-        if (ARGC == 1) {
-            print "No column names passed in."
-            exit 1
-        }
-
-        column_regex = "[[:space:]]*"
-
-        for (i = 1; i < ARGC - 1; i++) {
-            column_regex = column_regex ARGV[i] "[[:space:]]+" 
-        }
-        column_regex = column_regex ARGV[ARGC -1] "[[:space:]]*"
-
-        for (i = 1; i <= ARGC; i++) {
-            ARGV[i] = ""
-        }
-
-    }
+	print fields[fields_idx]
+}
 
 
-    {
-        print "fuck"
-        if ($0 ~ column_regex) {
-            chars_len = split($0, chars, "")
-            on_whitespace = 0
-            current_field_size = 0
-            field_widths_idx = 1
 
-            for (i = 1 ; i <= chars_len; i++) {
-                if (chars[i] == " " && on_whitespace == 0) {
-                    on_whitespace = 1
-                    current_field_size++
-                }
+function get_field_widths(line, result)
+{
+	# possible states we can be in for a line:
+	LINE_BEGIN = 1
+	WHITESPACE = 2
+	WORD = 3
+	#
+	chars_len = split(line, chars, "")
+	context = LINE_BEGIN
+	current_field_size = 0
+	field_widths_idx = 1
+	for (i = 1; i <= chars_len; i++) {
+		if (chars[i] == " " && context == LINE_BEGIN) {
+			current_field_size++
+		} else if (chars[i] == " " && context == WORD) {
+			current_field_size++
+			context = WHITESPACE
+		} else if (chars[i] == " " && context == WHITESPACE) {
+			current_field_size++
+		} else if (chars[i] != " " && context == LINE_BEGIN) {
+			current_field_size++
+			context = WORD
+		} else if (chars[i] != " " && context == WORD) {
+			current_field_size++
+		} else if (chars[i] != " " && context == WHITESPACE) {
+			result[field_widths_idx++] = current_field_size
+			current_field_size = 1
+			context = WORD
+		}
 
-                else if (chars[i] == " " && on_whitespace == 1) {
-                    current_field_size++
-                }
+	}
 
-                else if (chars[i] != " " && on_whitespace == 0) {
-                    current_field_size++
-                }
-                else if (chars[i] != " " && on_whitespace == 1) {
-                    field_widths[field_widths_idx++] = current_field_size
-                    current_field_size = 1
-                    on_whitespace = 0
-                }
-            }
+	#Sentinel value as we dont care about the length of the last field. Just consume
+	#the rest of the line.
+	result[field_widths_idx] = -1
+	return field_widths_idx
+}
 
-            #Sentinel value as we dont care about the length of the last field. Just consume
-            #the rest of the line.
 
-            field_widths[field_widths_idx] = -1
-        }
+function help_text()
+{
+	print "fixedwidth2csv                                                                 "
+	print "                                                                               "
+	print "Given n fixedwidth tables in STDIN, each with a header, turn each table into   "
+	print "its CSV equivalent.                                                            "
+	print "                                                                               "
+	print "For example, given:                                                            "
+	print "```                                                                            "
+	print "cat << EOF | fixedwidth2csv -d '|' -c 'country' -c 'district' -c 'city'        "
+	print "country       district city                                                    "
+	print "United States New York New York                                                "
+	print "Canada        Ontario  Toronto                                                 "
+	print "                                                                               "
+	print "country district      city                                                     "
+	print "France  Ile-de-France Paris                                                    "
+	print "Spain   Madrid        Madrid                                                   "
+	print "EOF                                                                            "
+	print "```                                                                            "
+	print "                                                                               "
+	print "we get,                                                                        "
+	print "                                                                               "
+	print "```                                                                            "
+	print "country|district|city                                                          "
+	print "United States|New York|New York                                                "
+	print "Canada|Ontario|Toronto                                                         "
+	print "                                                                               "
+	print "country|district|city                                                          "
+	print "France|Ile-de-France|Paris                                                     "
+	print "Spain|Madrid|Madrid                                                            "
+	print "```                                                                            "
+	print ".                                                                              "
+	print "                                                                               "
+	print "Note that GNU `awk` provides FIXEDWIDTH, but it needs to know the width of the "
+	print "columns ahead of time. This program calculates it on the fly.                  "
+	print "you.                                                                           "
+	print "                                                                               "
+	print "Also note that this program calls `awk`. That means that whether it works      "
+	print "correctly with UTF-8 depends on the implementation on your PATH. Notably,      "
+	print "GNU `awk` handles UTF-8 as expected.                                           "
+	print "                                                                               "
+	print "Options:                                                                       "
+	print "  -d Delimiter string to insert. Default is a comma.                           "
+	print "  -c Column name to match on. You may pass multiple column names to reduce     "
+	print "     risk of false positives.  THE ORDER OF COLUMN NAMES MATTERS. For example, "
+	print "     given the table above, -c country -c district would match, but x          "
+	print "     -c district -c country would not.                                         "
+	print "  -h Print this help text.                                                     "
+}
 
-        chars_len = split($0, chars, "")
-        fields_idx = 1;
-        current_field = ""
 
-        for (i = 1; i <= chars_len; i++) {
-            current_field = current_field chars[i]
-            if (length(current_field) == field_widths[fields_idx]) {
-                fields[fields_idx++] = current_field
-                current_field = ""
-            }
-        }
-      
-        fields[fields_idx] = current_field
+function parse_args(args, args_len, result)
+{
+	DELIMITER = 1
+	COLUMN_NAME = 2
+	NONE = 3
+	column_num = 1
+	for (i = 1; i <= args_len; i++) {
+		if (args[i] == "-h" || args[i] == "--help") {
+			print help_text()
+			exit 0
+		}
 
-        for (i = 1; i <= fields_idx; i++) {
-            gsub(/$[[:space:]]+/, "", fields[i])
-            gsub(/[[:space:]]+$/, "", fields[i])
-        }
-      
+		if (args[i] == "-d") {
+			context = DELIMITER
+		} else if (args[i] == "-c") {
+			context = COLUMN_NAME
+		} else if (context == DELIMITER) {
+			result["delimiter"] = args[i]
+			context = NONE
+		} else if (context == COLUMN_NAME) {
+			result["columns", column_num++] = args[i]
+			context = NONE
+		} else {
+			print "Invalid argument: " args[i]
+			exit 1
+		}
 
-        for (i = 1; i < fields_idx; i++) {
-            printf("%s%s", fields[i], OFS)
-        }
-        
-        print fields[fields_idx]
+	}
 
-    }
-    ' "$@"
+	return (column_num - 1)
+}
+

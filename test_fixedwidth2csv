@@ -1,6 +1,13 @@
 #!/bin/sh
 set -eu
 
+one_true_awk_version_format='^awk version [[:digit:]][[:digit:]]*$' 
+
+if ! awk --version | grep "$one_true_awk_version_format" > /dev/null ; then
+    echo '`awk` on PATH is not the "one true awk". Do you have `gawk` installed as `awk`?' 1>&2
+    exit 1
+fi
+
 expected=$(mktemp)
 actual=$(mktemp)
 
@@ -35,7 +42,6 @@ Spain   Madrid        Madrid
 EOF
 )
 
-
 cat <<EOF > "$expected"
 country<|>district<|>city
 United States<|>New York<|>New York
@@ -47,4 +53,18 @@ Spain<|>Madrid<|>Madrid
 EOF
 
 echo "$input" | fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
+diff "$actual" "$expected"
+
+
+#test 3
+if ! command -v gawk > /dev/null; then
+    echo '`gawk` not on PATH. Skipping unicode test.' 1>&2
+    exit 0
+fi
+
+export PATH=./gawk:$PATH
+#generate input and expected with scripts because it difficult to build those precisely without code 
+
+./print_unicode_table_expected > "$expected"
+./print_unicode_table_input | fixedwidth2csv -d '<|>' -c 'cats' -c 'city' > "$actual"
 diff "$actual" "$expected"

@@ -1,5 +1,11 @@
 #!/bin/sh
 temp=$(mktemp)
+
+
+header=$(awk 'BEGIN{found = 0}; /exec[[:space:]]+awk/ { found = 1; print; print "" } { if (found == 0) { print } }' "$1"); gawk -o- "$(cat "$1" | awk 'BEGIN{found = 0}; /exec[[:space:]]+awk/ { found = 1; next } { if (found == 1) { print } }')" | awk '/^[[:space:]]*}[[:space:]]*$/ { print; print ""; next; } { print }') > "$temp"
+
+
+
 (awk 'BEGIN{found = 0}; /exec[[:space:]]+awk/ { found = 1; print; print "" } { if (found == 0) { print } }' "$1"; gawk -o- "$(cat "$1" | awk 'BEGIN{found = 0}; /exec[[:space:]]+awk/ { found = 1; next } { if (found == 1) { print } }')" | awk '/^[[:space:]]*}[[:space:]]*$/ { print; print ""; next; } { print }') > "$temp"
 mv "$temp" "$1"
 chmod +x "$1"
