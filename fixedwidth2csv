@@ -16,7 +16,7 @@ United States New York New York
 Canada        Ontario  Toronto
 
 country district      city
-France  Île-de-France Paris
+France  Ile-de-France Paris
 Spain   Madrid        Madrid
 EOF
 
@@ -27,12 +27,16 @@ United States|New York|New York
 Canada|Ontario|Toronto
 
 country|district|city
-France|Île-de-France|Paris
+France|Ile-de-France|Paris
 Spain|Madrid|Madrid
 .
 
 Note that `gawk` provides FIXEDWIDTH, but you need to know the width of the columns ahead of time
 [or calculate it on the fly]. This program does that for you [and doesn't require gawk, only POSIX awk].
+
+
+
+
 
 Options:
   -d Delimiter string to insert. Default is a comma.

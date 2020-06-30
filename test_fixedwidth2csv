@@ -30,7 +30,7 @@ United States New York New York
 Canada        Ontario  Toronto
 
 country district      city
-France  Île-de-France Paris
+France  Ile-de-France Paris
 Spain   Madrid        Madrid
 EOF
 )
@@ -42,7 +42,7 @@ United States<|>New York<|>New York
 Canada<|>Ontario<|>Toronto
 
 country<|>district<|>city
-France<|>Île-de-France<|>Paris
+France<|>Ile-de-France<|>Paris
 Spain<|>Madrid<|>Madrid
 EOF
 
