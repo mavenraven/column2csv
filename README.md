@@ -2,7 +2,7 @@
 
 
 ## purpose
-This program takes data that it's a fixed width format and converts into a CSV.
+This program takes data that is in a fixed width format and converts into a CSV.
 
 `gawk` has `FIXEDWIDTH` for this behavior, which you should use instead if you can get away with it.
  
