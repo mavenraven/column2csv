@@ -1,6 +1,9 @@
 #!/bin/sh
 set -eu
 
+expected=$(mktemp)
+actual=$(mktemp)
+
 # test 1
 input=$(cat <<-'EOF'
 col1     col2  col3
@@ -10,7 +13,6 @@ hello cool ess  nice
 EOF
 )
 
-expected=$(mktemp)
 cat <<EOF > "$expected"
 col1<|>col2<|>col3
 hellllo<|>oh<|>cool
@@ -18,7 +20,6 @@ col1<|>col2<|>col3
 hello<|>cool ess<|>nice
 EOF
 
-actual=$(mktemp)
 echo "$input" | fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
 diff "$actual" "$expected"
 
@@ -35,7 +36,6 @@ EOF
 )
 
 
-expected=$(mktemp)
 cat <<EOF > "$expected"
 country<|>district<|>city
 United States<|>New York<|>New York
@@ -46,7 +46,5 @@ France<|>Île-de-France<|>Paris
 Spain<|>Madrid<|>Madrid
 EOF
 
-actual=$(mktemp)
 echo "$input" | fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
 diff "$actual" "$expected"
-

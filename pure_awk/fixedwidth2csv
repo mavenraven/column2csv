@@ -47,7 +47,7 @@ BEGIN {
 
 	}
 
-  #Last field won't ever match a length because of the sentinel value. We add it here.
+	#Last field won't ever match a length because of the sentinel value. We add it here.
 	fields[fields_idx] = current_field
 	for (i = 1; i <= fields_idx; i++) {
 		gsub(/$[[:space:]]+/, "", fields[i])
@@ -65,22 +65,32 @@ BEGIN {
 
 function get_field_widths(line, result)
 {
+	# possible states we can be in for a line:
+	LINE_BEGIN = 1
+	WHITESPACE = 2
+	WORD = 3
+	#
 	chars_len = split(line, chars, "")
-	on_whitespace = 0
+	context = LINE_BEGIN
 	current_field_size = 0
 	field_widths_idx = 1
 	for (i = 1; i <= chars_len; i++) {
-		if (chars[i] == " " && on_whitespace == 0) {
-			on_whitespace = 1
+		if (chars[i] == " " && context == LINE_BEGIN) {
 			current_field_size++
-		} else if (chars[i] == " " && on_whitespace == 1) {
+		} else if (chars[i] == " " && context == WORD) {
 			current_field_size++
-		} else if (chars[i] != " " && on_whitespace == 0) {
+			context = WHITESPACE
+		} else if (chars[i] == " " && context == WHITESPACE) {
 			current_field_size++
-		} else if (chars[i] != " " && on_whitespace == 1) {
+		} else if (chars[i] != " " && context == LINE_BEGIN) {
+			current_field_size++
+			context = WORD
+		} else if (chars[i] != " " && context == WORD) {
+			current_field_size++
+		} else if (chars[i] != " " && context == WHITESPACE) {
 			result[field_widths_idx++] = current_field_size
 			current_field_size = 1
-			on_whitespace = 0
+			context = WORD
 		}
 
 	}
@@ -159,6 +169,8 @@ function parse_args(args, args_len, result)
 			result["columns", column_num++] = args[i]
 			context = NONE
 		} else {
+			print "Invalid argument: " args[i]
+			exit 1
 		}
 
 	}
