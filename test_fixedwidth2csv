@@ -63,8 +63,8 @@ if ! command -v gawk > /dev/null; then
 fi
 
 export PATH=./gawk:$PATH
-#generate input and expected with scripts because it difficult to build those precisely without code 
 
+#generate input and expected with scripts because it difficult to build those precisely without code 
 ./print_utf8_table_expected > "$expected"
 ./print_utf8_table_input | fixedwidth2csv -d '<|>' -c 'cats' -c 'city' > "$actual"
 diff "$actual" "$expected"
