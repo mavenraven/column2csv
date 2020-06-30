@@ -55,8 +55,12 @@ EOF
 echo "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
 diff "$actual" "$expected"
 
+# test 3
+echo 'hi\037bye' > "$expected"
+echo 'hi bye' | ./fixedwidth2csv -d '\037' -c 'hi' > "$actual"
+diff "$actual" "$expected"
 
-#test 3
+#test 4
 if ! command -v gawk > /dev/null; then
     echo '`gawk` not on PATH. Skipping UTF-8 test.' 1>&2
     exit 0

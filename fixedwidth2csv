@@ -25,6 +25,7 @@ BEGIN {
 	}
 
 	OFS = parsed["delimiter"] ? parsed["delimiter"] : ","
+	OFS = OFS == "\\037" ? "\037" : OFS
 	column_regex = "[[:space:]]*"
 	for (i = 1; i < columns_len; i++) {
 		column_regex = column_regex parsed["columns", i] "[[:space:]]+"
