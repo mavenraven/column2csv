@@ -4,7 +4,7 @@ set -eu
 one_true_awk_version_format='^awk version [[:digit:]][[:digit:]]*$' 
 
 if ! awk --version | grep "$one_true_awk_version_format" > /dev/null ; then
-    echo '`awk` on PATH is not the "one true awk". Do you have `gawk` installed as `awk`?' 1>&2
+    printf '`awk` on PATH is not the "one true awk". Do you have `gawk` installed as `awk`?\n' 1>&2
     exit 1
 fi
 
@@ -27,7 +27,7 @@ col1<|>col2<|>col3
 hello<|>cool ess<|>nice
 EOF
 
-echo "$input" | ./fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
+printf '%s\n' "$input" | ./fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
 diff "$actual" "$expected"
 
 #test 2
@@ -52,17 +52,17 @@ France<|>Ile-de-France<|>Paris
 Spain<|>Madrid<|>Madrid
 EOF
 
-echo "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
+printf '%s\n' "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
 diff "$actual" "$expected"
 
 # test 3
-echo 'hi\037bye' > "$expected"
-echo 'hi bye' | ./fixedwidth2csv -d '\037' -c 'hi' > "$actual"
+printf 'hi\037bye\n' > "$expected"
+printf 'hi bye\n' | ./fixedwidth2csv -d '\037' -c 'hi' > "$actual"
 diff "$actual" "$expected"
 
 #test 4
 if ! command -v gawk > /dev/null; then
-    echo '`gawk` not on PATH. Skipping UTF-8 test.' 1>&2
+    printf '`gawk` not on PATH. Skipping UTF-8 test.\n' 1>&2
     exit 0
 fi
 
