@@ -21,7 +21,7 @@ BEGIN {
 	}
 
 	if (system("awk --version | grep GNU > /dev/null") != 0) {
-		print("GNU awk not on PATH. UTF-8 input unlikely to work correctly...") | "cat 1>&2"
+		print("GNU awk not being used. UTF-8 input unlikely to work correctly...") | "cat 1>&2"
 	}
 
 	OFS = parsed["delimiter"] ? parsed["delimiter"] : ","
