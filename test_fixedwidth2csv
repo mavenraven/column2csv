@@ -1,48 +1,50 @@
 #!/bin/sh
 set -eu
 
-one_true_awk_version_format='^awk version [[:digit:]][[:digit:]]*$' 
-
-if ! awk --version | grep "$one_true_awk_version_format" > /dev/null ; then
-    printf '`awk` on PATH is not the "one true awk". Do you have `gawk` installed as `awk`?\n' 1>&2
-    exit 1
+one_true_awk_version_format='^awk version [[:digit:]][[:digit:]]*$'
+if ! (awk --version >/dev/null 2>/dev/null && awk --version | grep "$one_true_awk_version_format" >/dev/null); then
+	printf '`awk` on PATH is not the "one true awk". Do you have `gawk` or `mawk` installed as `awk`?\n' 1>&2
+	exit 1
 fi
 
 expected=$(mktemp)
 actual=$(mktemp)
+export OLD_PATH=$PATH
 
 # test 1
-input=$(cat <<-'EOF'
-col1     col2  col3
-hellllo  oh    cool 
-col1  col2      col3    
-hello cool ess  nice 
-EOF
+input=$(
+	cat <<-'EOF'
+		col1     col2  col3
+		hellllo  oh    cool 
+		col1  col2      col3    
+		hello cool ess  nice 
+	EOF
 )
 
-cat <<EOF > "$expected"
+cat <<EOF >"$expected"
 col1<|>col2<|>col3
 hellllo<|>oh<|>cool
 col1<|>col2<|>col3
 hello<|>cool ess<|>nice
 EOF
 
-printf '%s\n' "$input" | ./fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' > "$actual"
+printf '%s\n' "$input" | ./fixedwidth2csv -d '<|>' -c 'col1' -c 'col2' -c 'col3' 2>/dev/null >"$actual"
 diff "$actual" "$expected"
 
 #test 2
-input=$(cat <<-'EOF'
-country       district city
-United States New York New York
-Canada        Ontario  Toronto
+input=$(
+	cat <<-'EOF'
+		country       district city
+		United States New York New York
+		Canada        Ontario  Toronto
 
-country district      city
-France  Ile-de-France Paris
-Spain   Madrid        Madrid
-EOF
+		country district      city
+		France  Ile-de-France Paris
+		Spain   Madrid        Madrid
+	EOF
 )
 
-cat <<EOF > "$expected"
+cat <<EOF >"$expected"
 country<|>district<|>city
 United States<|>New York<|>New York
 Canada<|>Ontario<|>Toronto
@@ -52,23 +54,49 @@ France<|>Ile-de-France<|>Paris
 Spain<|>Madrid<|>Madrid
 EOF
 
-printf '%s\n' "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' > "$actual"
+printf '%s\n' "$input" | ./fixedwidth2csv -d '<|>' -c 'country' -c 'district' -c 'city' 2>/dev/null >"$actual"
 diff "$actual" "$expected"
 
 # test 3
-printf 'hi\037bye\n' > "$expected"
-printf 'hi bye\n' | ./fixedwidth2csv -d '\037' -c 'hi' > "$actual"
+printf 'hi\037bye\n' >"$expected"
+printf 'hi bye\n' | ./fixedwidth2csv -d '\037' -c 'hi' 2>/dev/null >"$actual"
 diff "$actual" "$expected"
 
 #test 4
-if ! command -v gawk > /dev/null; then
-    printf '`gawk` not on PATH. Skipping UTF-8 test.\n' 1>&2
-    exit 0
+if ! command -v gawk >/dev/null; then
+	printf '`gawk` not on PATH. Skipping UTF-8 test.\n' 1>&2
+else
+	export PATH=./gawk:$OLD_PATH
+
+	#generate input and expected with scripts because it difficult to build those precisely without code
+	./print_utf8_table_expected >"$expected"
+	./print_utf8_table_input | ./fixedwidth2csv -d '<|>' -c 'cats' -c 'city' 2>/dev/null >"$actual"
+	diff "$actual" "$expected"
 fi
 
-export PATH=./gawk:$PATH
+#test 5
 
-#generate input and expected with scripts because it difficult to build those precisely without code 
-./print_utf8_table_expected > "$expected"
-./print_utf8_table_input | ./fixedwidth2csv -d '<|>' -c 'cats' -c 'city' > "$actual"
-diff "$actual" "$expected"
+export PATH=$OLD_PATH
+output_non_gnu_warning_message() {
+		echo 'string' | ./fixedwidth2csv -d '|' -c 'col' 2>&1 >/dev/null
+}
+
+warning_message='GNU awk not being used.'
+
+output_non_gnu_warning_message | grep "$warning_message" >/dev/null
+
+if ! command -v mawk >/dev/null; then
+	printf '`mawk` not on PATH. Skipping mawk UTF-8 warning test.\n' 1>&2
+else
+		export PATH=./mawk:$OLD_PATH
+		output_non_gnu_warning_message | grep "$warning_message" >/dev/null
+fi
+
+
+if ! command -v gawk >/dev/null; then
+	printf '`gawk` not on PATH. Skipping gawk UTF-8 warning test.\n' 1>&2
+	true
+else
+		export PATH=./gawk:$OLD_PATH
+		[ "$(output_non_gnu_warning_message | wc -m)" -eq 0 ]
+fi
