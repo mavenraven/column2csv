@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2016,SC2069
 set -eu
 
 one_true_awk_version_format='^awk version [[:digit:]][[:digit:]]*$'
